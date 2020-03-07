@@ -6,7 +6,7 @@ import time
 
 class App(QWidget):
 
-    def __init__(self, boolean):
+    def __init__(self, success):
         super().__init__()
         self.title = 'PDF Merger'
         self.setWindowIcon(QIcon("C:\\Users\\cold\\Downloads\\pdf_icon.png"))
@@ -15,7 +15,7 @@ class App(QWidget):
         self.width = 600
         self.height = 600
         self.fileNames = []
-        self.showSuccess = boolean
+        self.showSuccess = success
         self.initUI()
     
     def initUI(self):
@@ -27,21 +27,21 @@ class App(QWidget):
         self.movie.start()
 
         buttonGetFiles = QPushButton('Choose PDFs to Merge', self)
-        buttonGetFiles.resize(200,32)
+        buttonGetFiles.resize(200, 32)
         buttonGetFiles.move(200, 300)        
         buttonGetFiles.clicked.connect(self.openFileDialog)
 
         if self.showSuccess:
             explText = QLabel(self)
             explText.setText("Success! File created.")
-            explText.setGeometry(175, 100, 250, 32)
+            explText.setGeometry(190, 100, 240, 32)
             explText.setStyleSheet('color: green; font: 18pt Arial')
         
         self.show()
     
     def openFileDialog(self):
         options = QFileDialog.Options()
-        fileNamesFromDialog, _ = QFileDialog.getOpenFileNames(self,"QFileDialog.getOpenFileName()", "","PDF Files (*.pdf);;All Files (*)", options=options)
+        fileNamesFromDialog, _ = QFileDialog.getOpenFileNames(self,"Open Files (ctrl + click or shift + click to get multiple files)", "","PDF Files (*.pdf);;All Files (*)", options=options)
         if fileNamesFromDialog:
             for filename in fileNamesFromDialog:
                 self.fileNames.append(filename)
@@ -90,16 +90,20 @@ class filesChosen(QWidget):
         buttonMerge.clicked.connect(self.buttonMerge_onClick)
         
         explText = QLabel(self)
-        explText.setText("Merge will happen in order listed here.")
-        explText.setGeometry(200, 10, 200, 32)
+        explText.setText("Merge will happen in order listed here. Keep filenames on separate lines.")
+        explText.setGeometry(100, 40, 400, 32)
 
         expl2Text = QLabel(self)
-        expl2Text.setText("Rearrange by moving text to correct position with each file on a separate line.")
-        expl2Text.setGeometry(100, 50, 400, 32)
+        expl2Text.setText("Rearrange merge order by moving filenames to correct position.")
+        expl2Text.setGeometry(100, 70, 400, 32)
+
+        expl3Text = QLabel(self)
+        expl3Text.setText("Use Ctrl + click to select multiple files. Use button to go back if one file selected.")
+        expl3Text.setGeometry(100, 10, 400, 32)
 
         otherText = QLabel(self)
         otherText.setText("Files Chosen for Merging:")
-        otherText.setGeometry(200, 90, 200, 32)
+        otherText.setGeometry(100, 100, 200, 32)
 
         self.filesText = QTextEdit(self)
         if self.fileNames:
@@ -109,9 +113,8 @@ class filesChosen(QWidget):
             self.filesText.setText(fileNameText)
         else:
             self.filesText.setText('No files chosen.')
-        self.filesText.setGeometry(100,130,400,300)
+        self.filesText.setGeometry(100, 130, 400, 300)
         
-
         self.show()
 
     def buttonGoBack_onClick(self):
@@ -123,11 +126,14 @@ class filesChosen(QWidget):
         filesTextValue = self.filesText.toPlainText()
         files = filesTextValue.splitlines()
         output_file = self.saveFileDialog()
-        if output_file:
+        if output_file and files and files[0] != "No files chosen." and files[0] != "":
             self.merge_pdfs(files, output_file)
             self.cams = App(True)
             self.cams.show()
             self.close()
+        else:
+            self.filesText.setText("Error: Input or Output file missing. Please click back button and try again.")
+
 
     def saveFileDialog(self):
         options = QFileDialog.Options()
